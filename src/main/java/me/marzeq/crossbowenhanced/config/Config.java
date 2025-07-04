@@ -9,16 +9,23 @@ import java.io.File;
 import java.io.IOException;
 
 public class Config {
-    public boolean fireworksInOffHand = Defaults.fireworksInOffHand;
-    public boolean autoShoot = Defaults.autoShoot;
-    public ORDER order = Defaults.order;
+    public boolean enableProjectileManagementFeature = Defaults.enableProjectileManagementFeature;
+    public boolean enableAutoShootFeature = Defaults.enableAutoShootFeature;
+    public DRAW_ORDER drawOrder = Defaults.order;
+    public PREFERRED_PROJECTILE preferredProjectile = Defaults.preferredProjectile;
     public boolean prioritiseStacksWithLowerCount = Defaults.prioritiseStacksWithLowerCount;
 
     private transient File file;
 
-    public enum ORDER {
+    public enum DRAW_ORDER {
         FROM_TOP_LEFT,
         FROM_BOTTOM_RIGHT
+    }
+
+    public enum PREFERRED_PROJECTILE {
+        FIREWORKS,
+        TIPPED_ARROWS,
+        REGULAR_ARROWS
     }
 
     private Config() { }
@@ -53,9 +60,10 @@ public class Config {
     }
 
     public void reset() {
-        fireworksInOffHand = Defaults.fireworksInOffHand;
-        autoShoot = Defaults.autoShoot;
-        order = Defaults.order;
+        enableProjectileManagementFeature = Defaults.enableProjectileManagementFeature;
+        enableAutoShootFeature = Defaults.enableAutoShootFeature;
+        drawOrder = Defaults.order;
+        preferredProjectile = Defaults.preferredProjectile;
         prioritiseStacksWithLowerCount = Defaults.prioritiseStacksWithLowerCount;
         save();
     }

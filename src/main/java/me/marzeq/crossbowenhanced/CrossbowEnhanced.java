@@ -5,8 +5,10 @@ import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworksComponent;
+import net.minecraft.item.ArrowItem;
 import net.minecraft.item.FireworkRocketItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.TippedArrowItem;
 import net.minecraft.util.Hand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +32,21 @@ public class CrossbowEnhanced implements ClientModInitializer {
 
         if (!(itemStack.getItem() instanceof FireworkRocketItem)) return false;
 
-        var component = (FireworksComponent) itemStack.get(DataComponentTypes.FIREWORKS);
+        var component = itemStack.get(DataComponentTypes.FIREWORKS);
 
         return component != null && !component.explosions().isEmpty();
+    }
+
+    public static boolean isTippedArrow(ItemStack itemStack) {
+        if (itemStack == null) return false;
+
+        return itemStack.getItem() instanceof TippedArrowItem;
+    }
+
+    public static boolean isRegularArrow(ItemStack itemStack) {
+        if (itemStack == null) return false;
+
+        return itemStack.getItem() instanceof ArrowItem;
     }
 
     public static boolean isCrossbowCharged(ItemStack itemStack) {

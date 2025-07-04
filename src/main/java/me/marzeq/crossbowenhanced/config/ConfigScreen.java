@@ -5,6 +5,7 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.marzeq.crossbowenhanced.CrossbowEnhanced;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.api.Requirement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
@@ -20,38 +21,68 @@ public class ConfigScreen implements ModMenuApi {
 
         ConfigEntryBuilder entry = builder.entryBuilder();
 
-        builder.getOrCreateCategory(Text.of("Functionality"))
+        var projectileManagementRequirement = new Requirement() {
+            @Override
+            public boolean check() {
+                return config.enableProjectileManagementFeature;
+            }
+        };
+
+        builder.getOrCreateCategory(Text.of("Projectile management"))
                 .addEntry(entry
-                        .startBooleanToggle(Text.of("Put explosive fireworks in off-hand"), config.fireworksInOffHand)
-                        .setDefaultValue(Defaults.fireworksInOffHand)
-                        .setTooltip(Text.of("Put fireworks with explosive effects in the off-hand for the duration of drawing the crossbow (they will be put back in their slot afterwards)"))
-                        .setSaveConsumer(v -> config.fireworksInOffHand = v).build()
+                        .startBooleanToggle(Text.of("Enable feature"), config.enableProjectileManagementFeature)
+                        .setDefaultValue(Defaults.enableProjectileManagementFeature)
+                        .setTooltip(Text.of("This effectively replaces the vanilla projectile drawing process by automatically putting desired projectiles in your off-hand.\n" +
+                                            "This has the added bonus of not having to worry about putting charged fireworks in your off-hand."))
+                        .setSaveConsumer(v -> config.enableProjectileManagementFeature = v)
+                        .build()
                 )
                 .addEntry(entry
-                        .startBooleanToggle(Text.of("Auto shoot"), config.autoShoot)
-                        .setDefaultValue(Defaults.autoShoot)
-                        .setTooltip(Text.of("Automatically shoot the crossbow when it is fully charged and the player releases the right mouse button"))
-                        .setSaveConsumer(v -> config.autoShoot = v).build()
-                );
-
-        builder.getOrCreateCategory(Text.of("Drawing order"))
-                .addEntry(entry
-                        .startEnumSelector(Text.of("Order"), Config.ORDER.class, config.order)
-                        .setDefaultValue(Defaults.order)
+                        .startEnumSelector(Text.of("Preferred projectile type"), Config.PREFERRED_PROJECTILE.class, config.preferredProjectile)
+                        .setDefaultValue(Defaults.preferredProjectile)
                         .setEnumNameProvider(value -> switch (value) {
-                            case Config.ORDER.FROM_TOP_LEFT -> Text.of("Top left to bottom right");
-                            case Config.ORDER.FROM_BOTTOM_RIGHT -> Text.of("Bottom right to top left");
+                            case Config.PREFERRED_PROJECTILE.FIREWORKS -> Text.of("Fireworks");
+                            case Config.PREFERRED_PROJECTILE.TIPPED_ARROWS -> Text.of("Tipped arrows");
+                            case Config.PREFERRED_PROJECTILE.REGULAR_ARROWS -> Text.of("Regular arrows");
                             default -> Text.of(value.toString());
                         })
-                        .setTooltip(Text.of("The order in which the mod will take fireworks from the inventory"))
-                        .setSaveConsumer(v -> config.order = v).build()
+                        .setTooltip(Text.of("The preferred projectile type. The mod will try and shoot with it first, and only when there's none will it move on to other ones"))
+                        .setSaveConsumer(v -> config.preferredProjectile = v)
+                        .setDisplayRequirement(projectileManagementRequirement)
+                        .build()
+                )
+                .addEntry(entry
+                        .startEnumSelector(Text.of("Drawing order"), Config.DRAW_ORDER.class, config.drawOrder)
+                        .setDefaultValue(Defaults.order)
+                        .setEnumNameProvider(value -> switch (value) {
+                            case Config.DRAW_ORDER.FROM_TOP_LEFT -> Text.of("Top left to bottom right");
+                            case Config.DRAW_ORDER.FROM_BOTTOM_RIGHT -> Text.of("Bottom right to top left");
+                            default -> Text.of(value.toString());
+                        })
+                        .setTooltip(Text.of("If there are multiple slots of projectiles with equal priority, what is the order they should be drawn from"))
+                        .setSaveConsumer(v -> config.drawOrder = v)
+                        .setDisplayRequirement(projectileManagementRequirement)
+                        .build()
                 )
                 .addEntry(entry
                         .startBooleanToggle(Text.of("Prioritise stacks with lower count"), config.prioritiseStacksWithLowerCount)
                         .setDefaultValue(Defaults.prioritiseStacksWithLowerCount)
-                        .setTooltip(Text.of("If there is a stack with a lower count of fireworks, that would normally not be drawn from, take from it first"))
-                        .setSaveConsumer(v -> config.prioritiseStacksWithLowerCount = v).build()
+                        .setTooltip(Text.of("If there are multiple slots of projectiles with equal priority, but one has a lower count, should the drawing order be ignored and it be picked instead"))
+                        .setSaveConsumer(v -> config.prioritiseStacksWithLowerCount = v)
+                        .setDisplayRequirement(projectileManagementRequirement)
+                        .build()
                 );
+
+
+        builder.getOrCreateCategory(Text.of("Auto shoot"))
+                .addEntry(entry
+                    .startBooleanToggle(Text.of("Enable feature"), config.enableAutoShootFeature)
+                    .setDefaultValue(Defaults.enableAutoShootFeature)
+                    .setTooltip(Text.of("Automatically shoot the crossbow when it is fully charged and the player releases the right mouse button"))
+                    .setSaveConsumer(v -> config.enableAutoShootFeature= v)
+                    .build()
+                );
+
 
         builder.setSavingRunnable(config::save);
 

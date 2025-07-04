@@ -12,7 +12,10 @@
 
 ### Features
 
-- **Automatically swaps fireworks crafted with stars into the offhand while drawing the crossbow (if the player has any)**
+- **Overhauled projectile management**
+  - Effectively replaces the vanilla projectile drawing process by automatically putting desired projectiles in your off-hand.
+  - Allows you to select your preferred projectile type.
+  - Supports changing the slot picking order to keep your inventory organized.
 - **Shoots the crossbow immediately after it is fully drawn**
 - Config menu to enable/disable features
 

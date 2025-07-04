@@ -13,16 +13,26 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.function.Predicate;
+
 @Mixin(MinecraftClient.class)
 public class CrossbowDraw {
     @Inject(method="doItemUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;interactItem(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;", shift = At.Shift.BEFORE))
     private void doItemUse(CallbackInfo info) {
-        var player = CrossbowEnhanced.CLIENT.player;
-
-        if (!CrossbowEnhanced.config.fireworksInOffHand || player == null) {
+        if (!CrossbowEnhanced.config.enableProjectileManagementFeature) {
             return;
         }
 
+        var player = CrossbowEnhanced.CLIENT.player;
+        if (player == null) {
+            return;
+        }
+
+        fireProjectile(player);
+    }
+
+    @Unique
+    private void fireProjectile(ClientPlayerEntity player) {
         var handItemStack = player.getMainHandStack();
         var offHandItemStack = player.getOffHandStack();
 
@@ -48,10 +58,24 @@ public class CrossbowDraw {
             return;
         }
 
-        int slot = findSlotWithMinFireworkCount(player);
+        int slot = switch (CrossbowEnhanced.config.preferredProjectile) {
+            case FIREWORKS -> findPreferredStackOfType(player, CrossbowEnhanced::isFireworkWithEffects);
+            case TIPPED_ARROWS -> findPreferredStackOfType(player, CrossbowEnhanced::isTippedArrow);
+            case REGULAR_ARROWS -> findPreferredStackOfType(player, CrossbowEnhanced::isRegularArrow);
+            default -> -1;
+        };
+
+        // slot == -1 means there is no preferred projectile in inventory, therefore we must try all other projectile types as a backup
         if (slot == -1) {
+            slot = findPreferredStackOfType(player, CrossbowEnhanced::isFireworkWithEffects);
+        } if (slot == -1) { // we check if still no projectile is found
+            slot = findPreferredStackOfType(player, CrossbowEnhanced::isTippedArrow);
+        } if (slot == -1) { // and here too
+            slot = findPreferredStackOfType(player, CrossbowEnhanced::isRegularArrow);
+        } if (slot == -1) { // there are no projectiles at all, return
             return;
         }
+
 
         var slotTarget = crossbowInMainHand ? SlotManager.OFFHAND_SLOT : player.getInventory().getSelectedSlot();
 
@@ -65,18 +89,18 @@ public class CrossbowDraw {
     }
 
     @Unique
-    private int findSlotWithMinFireworkCount(ClientPlayerEntity player) {
+    private int findPreferredStackOfType(ClientPlayerEntity player, Predicate<ItemStack> pickPredicate) {
         int slot = -1;
         int minValue = Integer.MAX_VALUE;
 
-        int start = CrossbowEnhanced.config.order == Config.ORDER.FROM_TOP_LEFT ? 0 : 35;
-        int end = CrossbowEnhanced.config.order == Config.ORDER.FROM_TOP_LEFT ? 36 : -1;
-        int step = CrossbowEnhanced.config.order == Config.ORDER.FROM_TOP_LEFT ? 1 : -1;
+        int start = CrossbowEnhanced.config.drawOrder == Config.DRAW_ORDER.FROM_TOP_LEFT ? 0 : 35;
+        int end = CrossbowEnhanced.config.drawOrder == Config.DRAW_ORDER.FROM_TOP_LEFT ? 36 : -1;
+        int step = CrossbowEnhanced.config.drawOrder == Config.DRAW_ORDER.FROM_TOP_LEFT ? 1 : -1;
 
         for (int i = start; i != end; i += step) {
             var itemStack = player.getInventory().getStack(i);
 
-            if (CrossbowEnhanced.isFireworkWithEffects(itemStack)) {
+            if (pickPredicate.test(itemStack)) {
                 if (!CrossbowEnhanced.config.prioritiseStacksWithLowerCount) {
                     return i;
                 }

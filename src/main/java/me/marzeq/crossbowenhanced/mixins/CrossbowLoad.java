@@ -25,11 +25,11 @@ public abstract class CrossbowLoad {
 
         var crossbowHand = SlotManager.getCurrentSlot() == SlotManager.OFFHAND_SLOT ? Hand.MAIN_HAND : Hand.OFF_HAND;
 
-        if (CrossbowEnhanced.config.autoShoot && CrossbowEnhanced.isCrossbowCharged(stack)) {
+        if (CrossbowEnhanced.config.enableAutoShootFeature && CrossbowEnhanced.isCrossbowCharged(stack)) {
             CrossbowEnhanced.clickHand(crossbowHand);
         }
 
-        if (CrossbowEnhanced.config.fireworksInOffHand) {
+        if (CrossbowEnhanced.config.enableProjectileManagementFeature) {
             if (!SlotManager.isSwapped()) return;
 
             try {

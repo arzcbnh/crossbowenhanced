@@ -6,6 +6,7 @@ import me.marzeq.crossbowenhanced.config.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -47,8 +48,8 @@ public class CrossbowDraw {
         }
 
 
-        if (crossbowInMainHand && CrossbowEnhanced.isFireworkWithEffects(offHandItemStack) ||
-                !crossbowInMainHand && CrossbowEnhanced.isFireworkWithEffects(handItemStack)) {
+        if (crossbowInMainHand && CrossbowEnhanced.isPreferredProjectile(offHandItemStack) ||
+                !crossbowInMainHand && CrossbowEnhanced.isPreferredProjectile(handItemStack)) {
             return;
         }
 
@@ -79,13 +80,8 @@ public class CrossbowDraw {
 
         var slotTarget = crossbowInMainHand ? SlotManager.OFFHAND_SLOT : player.getInventory().getSelectedSlot();
 
-        try {
-            SlotManager.swap(slot, slotTarget);
-            SlotManager.swappedWithSlot(slot, slotTarget);
-        }  catch (NullPointerException e) {
-            CrossbowEnhanced.LOGGER.error("Something went terribly wrong, stack trace:");
-            e.printStackTrace();
-        }
+        SlotManager.swap(slot, slotTarget);
+        SlotManager.swappedWithSlot(slot, slotTarget);
     }
 
     @Unique

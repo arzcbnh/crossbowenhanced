@@ -32,8 +32,8 @@ public class Config {
 
     public static Config load() {
         File file = new File(
-                FabricLoader.getInstance().getConfigDir().toString(),
-                CrossbowEnhanced.MOD_ID + ".toml"
+            FabricLoader.getInstance().getConfigDir().toString(),
+            CrossbowEnhanced.MOD_ID + ".toml"
         );
 
         Config config;
@@ -55,7 +55,7 @@ public class Config {
         try {
             writer.write(this, file);
         } catch (IOException e) {
-            e.printStackTrace();
+            CrossbowEnhanced.LOGGER.error("Failed to write to config file");
         }
     }
 

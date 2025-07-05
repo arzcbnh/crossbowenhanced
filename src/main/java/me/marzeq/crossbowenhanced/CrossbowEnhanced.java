@@ -4,11 +4,7 @@ import me.marzeq.crossbowenhanced.config.Config;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.FireworksComponent;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.FireworkRocketItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.TippedArrowItem;
+import net.minecraft.item.*;
 import net.minecraft.util.Hand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +43,15 @@ public class CrossbowEnhanced implements ClientModInitializer {
         if (itemStack == null) return false;
 
         return itemStack.getItem() instanceof ArrowItem;
+    }
+
+    public static boolean isPreferredProjectile(ItemStack itemStack) {
+        return switch (config.preferredProjectile) {
+            case FIREWORKS -> isFireworkWithEffects(itemStack);
+            case TIPPED_ARROWS -> isTippedArrow(itemStack);
+            case REGULAR_ARROWS -> isRegularArrow(itemStack);
+            default -> false;
+        };
     }
 
     public static boolean isCrossbowCharged(ItemStack itemStack) {

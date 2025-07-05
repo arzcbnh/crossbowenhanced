@@ -30,7 +30,7 @@ public class SlotManager {
         return SlotManager.currentSlot;
     }
 
-    public static void swap(int fireworksSlot, int destinationSlot) throws NullPointerException {
+    public static void swap(int fireworksSlot, int destinationSlot) {
         if (fireworksSlot < 9) fireworksSlot += 36;
         if (destinationSlot < 9) destinationSlot += 36;
 
